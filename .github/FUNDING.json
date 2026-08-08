@@ -5,8 +5,7 @@
       {
         "address": "GAUPZN3SFJQD3VNVEY6Z7NYPW7FGV336PTJBGMOIJTKQHPBW6RTNDQZD",
         "weight": 100,
-        "role": "lead-maintainer",
-        "username": "AbleeGod"
+        "role": "lead-maintainer"
       }
     ]
   },
@@ -14,7 +13,6 @@
     "address": "GAUPZN3SFJQD3VNVEY6Z7NYPW7FGV336PTJBGMOIJTKQHPBW6RTNDQZD"
   },
   "custom": [
-    "https://github.com/AbleeGod/soroban-defi-analytics",
-    "https://github.com/AbleeGod/stellar-drips-protocol"
+    "https://github.com/Bigg770/soroban-defi-analytics"
   ]
 }
