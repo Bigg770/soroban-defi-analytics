@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -10,7 +11,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Download, Loader2 } from "lucide-react";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -66,16 +69,47 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function VolumeChart({ data }: VolumeChartProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = () => {
+    setIsExporting(true);
+    // Brief loading state so the user gets visual feedback
+    setTimeout(() => {
+      downloadCsv(data, buildCsvFilename());
+      setIsExporting(false);
+    }, 300);
+  };
+
   return (
     <div className="card w-full min-w-0 overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
           <h2 className="section-title mb-0">30-Day Volume Trends</h2>
           <p className="text-slate-400 text-sm mt-0.5">
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            aria-label="Export chart data as CSV"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+                       bg-slate-700/60 text-slate-300 border border-slate-600/50
+                       hover:bg-slate-600/60 hover:text-slate-100
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-colors cursor-pointer"
+          >
+            {isExporting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Download size={14} />
+            )}
+            <span>{isExporting ? "Exporting…" : "Export CSV"}</span>
+          </button>
+          <span className="badge-slate shrink-0">Last 30 days</span>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
