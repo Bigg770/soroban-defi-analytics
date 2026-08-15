@@ -10,7 +10,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Download } from "lucide-react";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -75,7 +77,19 @@ export default function VolumeChart({ data }: VolumeChartProps) {
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => downloadCsv(data, buildCsvFilename())}
+            disabled={!data?.length}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-100 transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Download 30-day volume data as CSV"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
+          <span className="badge-slate">Last 30 days</span>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
