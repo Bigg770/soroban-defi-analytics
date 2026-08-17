@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -75,7 +76,16 @@ export default function VolumeChart({ data }: VolumeChartProps) {
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => downloadCsv(data, buildCsvFilename())}
+            aria-label="Export chart data as CSV"
+            className="badge-slate hover:bg-slate-600 transition-colors cursor-pointer"
+          >
+            Export CSV
+          </button>
+          <span className="badge-slate">Last 30 days</span>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
