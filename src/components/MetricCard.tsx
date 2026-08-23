@@ -1,3 +1,5 @@
+"use client";
+import { useCurrency } from "@/hooks/useCurrency";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { ProtocolMetric } from "@/services/sorobanApi";
 import clsx from "clsx";
@@ -13,13 +15,9 @@ const CATEGORY_COLORS: Record<ProtocolMetric["category"], string> = {
   Bridge: "text-sky-400 bg-sky-900/30 border-sky-800/40",
 };
 
-const formatUSD = (n: number) => {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
-  return `$${n}`;
-};
 
 export default function MetricCard({ metric }: MetricCardProps) {
+  const { formatValue } = useCurrency();
   const isPositive = metric.change24h > 0;
   const isNeutral = metric.change24h === 0;
 
@@ -62,7 +60,7 @@ export default function MetricCard({ metric }: MetricCardProps) {
           Total Value Locked
         </p>
         <p className="text-2xl font-bold text-slate-100 tabular-nums">
-          {formatUSD(metric.tvl)}
+          {formatValue(metric.tvl)}
         </p>
       </div>
 
@@ -71,7 +69,7 @@ export default function MetricCard({ metric }: MetricCardProps) {
         <div>
           <p className="text-xs text-slate-500 mb-0.5">24h Volume</p>
           <p className="text-sm font-semibold text-slate-300 tabular-nums">
-            {formatUSD(metric.volume24h)}
+            {formatValue(metric.volume24h)}
           </p>
         </div>
         <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-900/40 text-green-400 border border-green-800/40 rounded-full text-sm font-semibold">

@@ -1,16 +1,14 @@
+"use client";
+import { useCurrency } from "@/hooks/useCurrency";
 import type { LiquidityPool } from "@/services/sorobanApi";
 
 interface PoolsTableProps {
   pools: LiquidityPool[];
 }
 
-const formatUSD = (n: number) => {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
-  return `$${n}`;
-};
 
 export default function PoolsTable({ pools }: PoolsTableProps) {
+  const { formatValue } = useCurrency();
   return (
     <div className="card animate-fade-in">
       <div className="flex items-center justify-between mb-5">
@@ -70,12 +68,12 @@ export default function PoolsTable({ pools }: PoolsTableProps) {
 
                 {/* TVL */}
                 <td className="px-6 py-3.5 font-semibold text-slate-100 tabular-nums whitespace-nowrap">
-                  {formatUSD(pool.tvl)}
+                  {formatValue(pool.tvl)}
                 </td>
 
                 {/* Volume */}
                 <td className="px-6 py-3.5 text-slate-300 tabular-nums whitespace-nowrap">
-                  {formatUSD(pool.volume24h)}
+                  {formatValue(pool.volume24h)}
                 </td>
 
                 {/* Fee */}

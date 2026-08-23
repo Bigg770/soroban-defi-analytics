@@ -1,15 +1,13 @@
+"use client";
 import { Activity, Github, ExternalLink } from "lucide-react";
+import { useCurrency, type Currency } from "@/hooks/useCurrency";
 import type { DashboardSummary } from "@/services/sorobanApi";
 
 interface HeaderProps {
   summary: DashboardSummary;
 }
 
-const formatUSD = (n: number) => {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
-  return `$${n}`;
-};
+
 
 const StatPill = ({
   label,
@@ -39,6 +37,7 @@ const StatPill = ({
 );
 
 export default function Header({ summary }: HeaderProps) {
+  const { currency, setCurrency, formatValue } = useCurrency();
   return (
     <header className="border-b border-slate-700/60 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -56,6 +55,27 @@ export default function Header({ summary }: HeaderProps) {
                 Real-time metrics across Stellar Soroban protocols
               </p>
             </div>
+          </div>
+          <div
+            className="flex items-center rounded-lg bg-slate-800 border border-slate-700 p-0.5"
+            role="group"
+            aria-label="Currency"
+          >
+            {(["USD", "XLM"] as Currency[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setCurrency(option)}
+                aria-pressed={currency === option}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${
+                  currency === option
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-400 hover:text-slate-100"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
@@ -82,11 +102,11 @@ export default function Header({ summary }: HeaderProps) {
         <div className="flex flex-wrap gap-2">
           <StatPill
             label="Total TVL"
-            value={formatUSD(summary.totalTVL)}
+            value={formatValue(summary.totalTVL)}
           />
           <StatPill
             label="24h Volume"
-            value={formatUSD(summary.totalVolume24h)}
+            value={formatValue(summary.totalVolume24h)}
           />
           <StatPill
             label="TVL Change"
