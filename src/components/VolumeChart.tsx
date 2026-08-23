@@ -1,5 +1,5 @@
 "use client";
-
+import { useCurrency } from "@/hooks/useCurrency";
 import {
   AreaChart,
   Area,
@@ -22,11 +22,6 @@ const COLORS = {
   blend: "#10b981",
 };
 
-const formatUSD = (value: number) => {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value}`;
-};
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
@@ -37,10 +32,16 @@ interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
+  formatValue: (value: number) => string;
 }
 
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (!active || !payload?.length) return null;
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  formatValue,
+}: CustomTooltipProps) => {
+    if (!active || !payload?.length) return null;
 
   return (
     <div className="bg-slate-800 border border-slate-600 rounded-xl p-3 shadow-xl text-sm min-w-[160px]">
@@ -57,7 +58,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
             <span className="text-slate-300 capitalize">{entry.name}</span>
           </span>
           <span className="font-semibold text-slate-100">
-            {formatUSD(entry.value)}
+            {formatValue(entry.value)}
           </span>
         </div>
       ))}
@@ -66,13 +67,24 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function VolumeChart({ data }: VolumeChartProps) {
+  const { currency, formatValue, xlmPrice } = useCurrency();
+  const chartData =
+    currency === "XLM"
+      ? data.map((point) => ({
+          ...point,
+          soroswap: point.soroswap / xlmPrice,
+          phoenix: point.phoenix / xlmPrice,
+          blend: point.blend / xlmPrice,
+          total: point.total / xlmPrice,
+        }))
+      : data;
   return (
     <div className="card w-full min-w-0 overflow-hidden animate-fade-in">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="section-title mb-0">30-Day Volume Trends</h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            Daily trading volume by protocol (USD)
+            Daily trading volume by protocol ({currency})
           </p>
         </div>
         <span className="badge-slate">Last 30 days</span>
@@ -80,7 +92,7 @@ export default function VolumeChart({ data }: VolumeChartProps) {
 
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
-          data={data}
+          data={chartData}
           margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
         >
           <defs>
@@ -115,14 +127,14 @@ export default function VolumeChart({ data }: VolumeChartProps) {
           />
 
           <YAxis
-            tickFormatter={formatUSD}
+            tickFormatter={formatValue}
             tick={{ fill: "#94a3b8", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={56}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip formatValue={formatValue} />} />
 
           <Legend
             wrapperStyle={{ paddingTop: "16px", fontSize: "12px" }}

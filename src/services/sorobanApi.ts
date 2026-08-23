@@ -225,3 +225,11 @@ export const fetchDashboardSummary = async (): Promise<DashboardSummary> => {
     tvlChange24h: 4.3,
   };
 };
+
+export const fetchXlmPrice = async (): Promise<number> => {
+  await delay(50);
+
+  // Mocked XLM/USD exchange rate.
+  // Example: 1 XLM = $0.135 USD
+  return 0.135;
+};
