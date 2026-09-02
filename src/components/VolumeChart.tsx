@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -11,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -66,16 +68,39 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function VolumeChart({ data }: VolumeChartProps) {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = () => {
+    setExporting(true);
+    // Defer the download so React can render the loading state in the same tick.
+    window.setTimeout(() => {
+      downloadCsv(data, buildCsvFilename());
+      setExporting(false);
+    }, 0);
+  };
+
   return (
     <div className="card w-full min-w-0 overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <h2 className="section-title mb-0">30-Day Volume Trends</h2>
           <p className="text-slate-400 text-sm mt-0.5">
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex items-center gap-2">
+          <span className="badge-slate">Last 30 days</span>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting || data.length === 0}
+            aria-label="Export chart data as CSV"
+            aria-busy={exporting}
+            className="badge-slate hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {exporting ? "Exporting…" : "Export CSV"}
+          </button>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
