@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -10,7 +11,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Download, Loader2 } from "lucide-react";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -66,16 +69,46 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function VolumeChart({ data }: VolumeChartProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = () => {
+    if (isExporting || data.length === 0) return;
+    setIsExporting(true);
+    // Brief delay so the loading state is perceivable even though CSV
+    // generation itself is near-instant for this dataset size.
+    window.setTimeout(() => {
+      downloadCsv(data, buildCsvFilename());
+      setIsExporting(false);
+    }, 300);
+  };
+
   return (
     <div className="card w-full min-w-0 overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <div>
           <h2 className="section-title mb-0">30-Day Volume Trends</h2>
           <p className="text-slate-400 text-sm mt-0.5">
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex items-center gap-2">
+          <span className="badge-slate">Last 30 days</span>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={isExporting || data.length === 0}
+            aria-label="Export 30-day volume history as CSV"
+            aria-busy={isExporting}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isExporting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            Export CSV
+          </button>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
