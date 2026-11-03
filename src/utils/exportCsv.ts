@@ -1,40 +1,45 @@
-import type { VolumeDataPoint } from "@/services/sorobanApi";
-
-/**
- * Triggers a client-side CSV download of historical pool volume data.
- * Called from a "use client" component — do not import in Server Components.
- *
- * @param data     Array of VolumeDataPoint returned by fetchVolumeHistory()
- * @param filename Desired file name, e.g. "soroban-tvl-2026-08-07.csv"
- */
-export function downloadCsv(data: VolumeDataPoint[], filename: string): void {
-  const header =
-    "date,soroswap_volume,phoenix_volume,blend_volume,total_volume\n";
-
-  const rows = data
-    .map(
-      (r) =>
-        `${r.date},${r.soroswap},${r.phoenix},${r.blend},${r.total}`
-    )
-    .join("\n");
-
-  const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.setAttribute("aria-label", `Download ${filename}`);
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
+export interface VolumeTvlRow {
+  date: string;
+  tvl?: number;
+  volume?: number;
+  [key: string]: unknown;
 }
 
-/**
- * Returns a filename string in the format: soroban-tvl-YYYY-MM-DD.csv
- */
-export function buildCsvFilename(): string {
-  const date = new Date().toISOString().split("T")[0];
-  return `soroban-tvl-${date}.csv`;
+export function formatHistoricalTvlCsv(rows: VolumeTvlRow[]): string {
+  const headers = ["Date", "TVL (USD)", "Volume (USD)"];
+  const escapeCsv = (val: unknown): string => {
+    const str = val === null || val === undefined ? "" : String(val);
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+  const lines = [headers.join(",")];
+  for (const row of rows) {
+    lines.push(
+      [
+        escapeCsv(row.date),
+        escapeCsv(row.tvl ?? 0),
+        escapeCsv(row.volume ?? 0),
+      ].join(",")
+    );
+  }
+  return lines.join("\n");
+}
+
+export function downloadHistoricalTvlCsv(
+  rows: VolumeTvlRow[],
+  filename: string = "soroban-historical-tvl-volume.csv"
+): void {
+  if (typeof window === "undefined" || !rows?.length) return;
+  const csvContent = formatHistoricalTvlCsv(rows);
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
