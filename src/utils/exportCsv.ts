@@ -1,13 +1,10 @@
 import type { VolumeDataPoint } from "@/services/sorobanApi";
 
 /**
- * Triggers a client-side CSV download of historical pool volume data.
- * Called from a "use client" component — do not import in Server Components.
- *
- * @param data     Array of VolumeDataPoint returned by fetchVolumeHistory()
- * @param filename Desired file name, e.g. "soroban-tvl-2026-08-07.csv"
+ * Formats VolumeDataPoint rows into CSV text with the required header columns:
+ * date,soroswap_volume,phoenix_volume,blend_volume,total_volume
  */
-export function downloadCsv(data: VolumeDataPoint[], filename: string): void {
+export function formatCsvContent(data: VolumeDataPoint[]): string {
   const header =
     "date,soroswap_volume,phoenix_volume,blend_volume,total_volume\n";
 
@@ -18,7 +15,19 @@ export function downloadCsv(data: VolumeDataPoint[], filename: string): void {
     )
     .join("\n");
 
-  const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+  return header + rows;
+}
+
+/**
+ * Triggers a client-side CSV download of historical pool volume data.
+ * Called from a "use client" component — do not import in Server Components.
+ *
+ * @param data     Array of VolumeDataPoint returned by fetchVolumeHistory()
+ * @param filename Desired file name, e.g. "soroban-tvl-2026-08-07.csv"
+ */
+export function downloadCsv(data: VolumeDataPoint[], filename: string): void {
+  const csvContent = formatCsvContent(data);
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
 
   const anchor = document.createElement("a");
