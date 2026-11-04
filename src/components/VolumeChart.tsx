@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -11,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { VolumeDataPoint } from "@/services/sorobanApi";
+import { downloadCsv, buildCsvFilename } from "@/utils/exportCsv";
 
 interface VolumeChartProps {
   data: VolumeDataPoint[];
@@ -66,16 +68,40 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function VolumeChart({ data }: VolumeChartProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = () => {
+    if (isExporting || !data?.length) return;
+    setIsExporting(true);
+    try {
+      downloadCsv(data, buildCsvFilename());
+    } finally {
+      setTimeout(() => setIsExporting(false), 250);
+    }
+  };
+
   return (
     <div className="card w-full min-w-0 overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <h2 className="section-title mb-0">30-Day Volume Trends</h2>
           <p className="text-slate-400 text-sm mt-0.5">
             Daily trading volume by protocol (USD)
           </p>
         </div>
-        <span className="badge-slate">Last 30 days</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="badge-slate">Last 30 days</span>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={isExporting || !data?.length}
+            aria-label="Export chart data as CSV"
+            aria-busy={isExporting}
+            className="badge-slate hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:ring-offset-slate-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExporting ? "Exporting..." : "Export CSV"}
+          </button>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
